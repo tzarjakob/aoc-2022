@@ -40,7 +40,9 @@ defmodule Day03 do
     |> String.split("\n")
     |> Enum.map(fn val -> String.graphemes(val) |> MapSet.new() end)
     |> Enum.chunk_every(3)
-    |> Enum.map(fn x -> Enum.reduce(x, &MapSet.intersection/2) |> MapSet.to_list |> calculate_priority() end)
+    |> Enum.map(fn x ->
+      Enum.reduce(x, &MapSet.intersection/2) |> MapSet.to_list() |> calculate_priority()
+    end)
     |> Enum.sum()
   end
 end
