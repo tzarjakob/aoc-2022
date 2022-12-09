@@ -1,4 +1,4 @@
-# When a stateful is easy, and a stateless not
+# When a stateful solution is easy, and a stateless not
 
 defmodule Day08 do
   @on_load :load_nifs
