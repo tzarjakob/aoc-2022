@@ -3,6 +3,10 @@
 size_t get_size(const char *PATH)
 {
     FILE *f = fopen(PATH, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Could not open file %s\n", PATH);
+        exit(1);
+    }
     size_t size = 0;
     while (fgetc(f) != '\n')
         ++size;
@@ -57,6 +61,11 @@ int second_part(const char *PATH)
     int matrix[size][size];
     int i, j = 0;
     FILE *file = fopen(PATH, "r");
+
+    if (file == NULL) {
+        fprintf(stderr, "Could not open file %s\n", PATH);
+        exit(1);
+    }
 
     while ((c = fgetc(file)) != EOF)
     {
