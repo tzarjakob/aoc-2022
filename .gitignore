@@ -28,3 +28,10 @@ aoc_2022-*.tar
 
 # Aoc files
 *.aoc
+
+# Executables and libraries
+*.out
+*.so
+
+# Vscode dev files
+.vscode/**

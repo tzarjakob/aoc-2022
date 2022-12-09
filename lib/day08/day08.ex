@@ -1,6 +1,16 @@
 # When a stateful is easy, and a stateless not
 
 defmodule Day08 do
+  @on_load :load_nifs
+
+  def load_nifs() do
+    :erlang.load_nif('./lib/day08/part_two_nif', 0)
+  end
+
+  def part_two_nif(_PATH ) do
+    raise("Not implemented")
+  end
+
   def process_input(str) do
     str
     |> String.split("\n")
@@ -92,5 +102,6 @@ defmodule Day08 do
   end
 
   def part_two() do
+    part_two_nif('./lib/day08/input.aoc')
   end
 end
