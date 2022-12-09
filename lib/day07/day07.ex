@@ -138,6 +138,31 @@ defmodule Day07 do
     |> count()
   end
 
+  def free_space_req() do
+    30_000_000
+  end
+
+  def total_space() do
+    70_000_000
+  end
+
   def part_two() do
+    dirs = explore_commands(tl(input()), "/", Map.new())
+
+    sizes =
+      compute_sizes(Map.to_list(dirs), dirs)
+      |> Enum.reduce(Map.new(), fn {key, value}, acc ->
+        Map.put(acc, key, value)
+      end)
+
+    nec_space = (free_space_req() - (total_space() - Map.get(sizes, "/"))) |> IO.inspect()
+
+    Enum.reduce(sizes, total_space(), fn {_dir, val}, acc ->
+      if val >= nec_space and val < acc do
+        val
+      else
+        acc
+      end
+    end)
   end
 end
