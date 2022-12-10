@@ -7,7 +7,7 @@ defmodule Day08 do
     :erlang.load_nif('./lib/day08/part_two_nif', 0)
   end
 
-  def part_two_nif(_PATH ) do
+  def part_two_nif(_PATH) do
     raise("Not implemented")
   end
 
