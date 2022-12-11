@@ -1,4 +1,4 @@
-defmodule Day11 do
+defmodule Day11_p1 do
   def get_last_word_as_integer(item) do
     item |> String.split() |> List.last() |> String.to_integer()
   end
@@ -67,22 +67,21 @@ defmodule Day11 do
   end
 
   def apply_test(val, test, ift, iff) do
+    # ritorna il numero di scimmia a cui va lanciato e il val
     nmon =
       cond do
         rem(val, test) == 0 -> ift
         true -> iff
       end
 
-    # {nmon, rem(val, test)}
     {nmon, val}
   end
 
-  def t_and_dest(item, op, test, ift, iff, mcm) do
-    item |> apply_op(op) |> rem(mcm) |> apply_test(test, ift, iff)
-    # item |> apply_op(op) |> div(3) |> trunc() |> apply_test(test, ift, iff)
+  def t_and_dest(item, op, test, ift, iff) do
+    item |> apply_op(op) |> div(3) |> trunc() |> apply_test(test, ift, iff)
   end
 
-  def round_sim(state, count, mcm) do
+  def round_sim(state, count) do
     state
     |> Enum.reduce({state, count}, fn item, {accstate, acccount} ->
       [mnitem, _til, _top, _ttest, _tift, _tiff] = item
@@ -90,7 +89,7 @@ defmodule Day11 do
 
       nstate =
         Enum.reduce(il, accstate, fn item, accaccstate ->
-          {nnm, nworry} = t_and_dest(item, op, test, ift, iff, mcm)
+          {nnm, nworry} = t_and_dest(item, op, test, ift, iff)
 
           List.update_at(accaccstate, nnm, fn item ->
             [tmn, til, top, ttest, tift, tiff] = item
@@ -105,34 +104,23 @@ defmodule Day11 do
     end)
   end
 
-  def round_manager(n, _state, count, _mcm) when n == 0 do
+  def round_manager(n, _state, count) when n == 0 do
     count
   end
 
-  def round_manager(n, state, count, mcm) do
-    {state, count} = round_sim(state, count, mcm)
-    round_manager(n - 1, state, count, mcm)
-  end
-
-  def compute_mcm(state) do
-    Enum.reduce(state, 1, fn item, acc ->
-      [_mn, _il, _op, test, _ift, _iff] = item
-      acc * test
-    end)
+  def round_manager(n, state, count) do
+    {state, count} = round_sim(state, count)
+    round_manager(n - 1, state, count)
   end
 
   def part_one() do
     state = input()
-    mcm = compute_mcm(state)
 
     s =
-      round_manager(10000, state, Map.new(), mcm)
+      round_manager(20, state, Map.new())
       |> Enum.map(fn {_mon, val} -> val end)
       |> Enum.sort(&(&1 >= &2))
 
     Enum.at(s, 0) * Enum.at(s, 1)
-  end
-
-  def part_two() do
   end
 end
