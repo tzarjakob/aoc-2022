@@ -1,4 +1,8 @@
 defmodule Day11 do
+  def get_last_word_as_integer(item) do
+    item |> String.split() |> List.last() |> String.to_integer()
+  end
+
   def catch_useful_stuff(l) do
     [snmon, ssitems, sop, stest, sift, siff] = l
 
@@ -19,9 +23,9 @@ defmodule Day11 do
 
     top = sop |> String.split(":") |> Enum.at(1) |> String.split()
     op = [Enum.at(top, 3), Enum.at(top, 4)]
-    test = stest |> String.split() |> List.last() |> String.to_integer()
-    ift = sift |> String.split() |> List.last() |> String.to_integer()
-    iff = siff |> String.split() |> List.last() |> String.to_integer()
+    test = stest |> get_last_word_as_integer()
+    ift = sift |> get_last_word_as_integer()
+    iff = siff |> get_last_word_as_integer()
     [nmon, sitems, op, test, ift, iff]
   end
 
@@ -73,71 +77,51 @@ defmodule Day11 do
     {nmon, val}
   end
 
-  def smistamento(tmap, state, nstate) when tmap == [] do
-    {state, nstate}
+  def t_and_dest(item, op, test, ift, iff) do
+    item |> apply_op(op) |> div(3) |> trunc() |> apply_test(test, ift, iff)
   end
 
-  def smistamento(tmap, state, nstate) do
-    Enum.reduce(tmap, {state, nstate}, fn {nmon, items}, {as, ans} ->
-      comp =
-        if as == [] do
-          10
-        else
-          hd(hd(as))
-        end
+  def round_sim(state, count) do
+    state
+    |> Enum.reduce({state, count}, fn item, {accstate, acccount} ->
+      [mnitem, _til, _top, _ttest, _tift, _tiff] = item
+      [mn, il, op, test, ift, iff] = Enum.at(accstate, mnitem)
 
-      if nmon >= comp do
-        {List.update_at(as, nmon - hd(hd(state)), fn [mn, il, op, test, ift, iff] ->
-           [mn, il ++ items, op, test, ift, iff]
-         end), ans}
-      else
-        {as,
-         List.update_at(ans, nmon, fn [mn, il, op, test, ift, iff] ->
-           [mn, il ++ items, op, test, ift, iff]
-         end)}
-      end
+      nstate =
+        Enum.reduce(il, accstate, fn item, accaccstate ->
+          {nnm, nworry} = t_and_dest(item, op, test, ift, iff)
+
+          List.update_at(accaccstate, nnm, fn item ->
+            [tmn, til, top, ttest, tift, tiff] = item
+            [tmn, til ++ [nworry], top, ttest, tift, tiff]
+          end)
+        end)
+
+      {
+        List.replace_at(nstate, mnitem, [mn, [], op, test, ift, iff]),
+        Map.update(acccount, mnitem, length(il), fn val -> val + length(il) end)
+      }
     end)
   end
 
-  def round_sim(state, tmap, nstate, count) when state == [] do
-    {_state, nstate} = smistamento(tmap, state, nstate)
-    {nstate, count}
-  end
-
-  def round_sim(state, tmap, nstate, count) do
-    tmap |> IO.inspect()
-    {state, nstate} = smistamento(tmap, state, nstate)
-    tmap = Map.new()
-    [mn, il, op, test, ift, iff] = hd(state)
-
-    ntmap =
-      Enum.reduce(il, tmap, fn item, acc ->
-        {nnm, nworry} = item |> apply_op(op) |> div(3) |> trunc() |> apply_test(test, ift, iff)
-        Map.update(acc, nnm, [], fn item -> item ++ [nworry] end)
-      end)
-
-    oldval = Map.get(count, mn, 0)
-
-    round_sim(
-      tl(state),
-      ntmap,
-      nstate ++ [[mn, [], op, test, ift, iff]],
-      Map.put(count, mn, oldval + length(il))
-    )
-  end
-
-  def round_manager(n, state, count) when n == 0 do
-    {state, count}
+  def round_manager(n, _state, count) when n == 0 do
+    count
   end
 
   def round_manager(n, state, count) do
-    {nstate, ncount} = round_sim(state, Map.new(), [], count)
-    round_manager(n - 1, nstate, ncount)
+    {state, count} = round_sim(state, count)
+    round_manager(n - 1, state, count)
   end
 
   def part_one() do
-    state = example()
-    round_manager(1, state, Map.new())
+    state = input()
+
+    s =
+      round_manager(20, state, Map.new())
+      |> Enum.map(fn {_mon, val} -> val end)
+      |> Enum.sort(&(&1 >= &2))
+
+    Enum.at(s, 0) * Enum.at(s, 1)
   end
 
   def part_two() do
