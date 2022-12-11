@@ -73,17 +73,47 @@ defmodule Day11 do
     {nmon, val}
   end
 
-  def round_sim(state, _tmap, nstate, count) when state == [] do
+  def smistamento(tmap, state, nstate) when tmap == [] do
+    {state, nstate}
+  end
+
+  def smistamento(tmap, state, nstate) do
+    Enum.reduce(tmap, {state, nstate}, fn {nmon, items}, {as, ans} ->
+      comp =
+        if as == [] do
+          10
+        else
+          hd(hd(as))
+        end
+
+      if nmon >= comp do
+        {List.update_at(as, nmon - hd(hd(state)), fn [mn, il, op, test, ift, iff] ->
+           [mn, il ++ items, op, test, ift, iff]
+         end), ans}
+      else
+        {as,
+         List.update_at(ans, nmon, fn [mn, il, op, test, ift, iff] ->
+           [mn, il ++ items, op, test, ift, iff]
+         end)}
+      end
+    end)
+  end
+
+  def round_sim(state, tmap, nstate, count) when state == [] do
+    {_state, nstate} = smistamento(tmap, state, nstate)
     {nstate, count}
   end
 
   def round_sim(state, tmap, nstate, count) do
+    tmap |> IO.inspect()
+    {state, nstate} = smistamento(tmap, state, nstate)
+    tmap = Map.new()
     [mn, il, op, test, ift, iff] = hd(state)
 
     ntmap =
       Enum.reduce(il, tmap, fn item, acc ->
         {nnm, nworry} = item |> apply_op(op) |> div(3) |> trunc() |> apply_test(test, ift, iff)
-        Map.update(acc, nnm, [] ,fn item -> item ++ [nworry] end)
+        Map.update(acc, nnm, [], fn item -> item ++ [nworry] end)
       end)
 
     oldval = Map.get(count, mn, 0)
