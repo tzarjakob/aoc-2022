@@ -1,4 +1,4 @@
-defmodule Day12 do
+defmodule Day12P2 do
   def map_elem(var) do
     <<v::utf8>> = var
     v
@@ -24,6 +24,18 @@ defmodule Day12 do
       el1 >= el2 - 1 -> [{el1_val, el2_val}]
       true -> []
     end
+  end
+
+  def generate_graph(matrix) do
+    edges = matrix |> define_edges_from_input() |> List.flatten()
+
+    l = length(matrix) * length(Enum.at(matrix, 0, 0)) - 1
+
+    Graph.new()
+    |> Graph.add_vertex("S")
+    |> Graph.add_vertex("E")
+    |> Graph.add_vertices(Enum.to_list(0..l))
+    |> Graph.add_edges(edges)
   end
 
   def define_edges_from_input(matrix) do
@@ -68,30 +80,20 @@ defmodule Day12 do
               check_if_edges(matrix, rl, x, rl, x - 1, cl)
 
           {x, y} ->
-            check_if_edges(matrix, x, y, x- 1, y, cl) ++
+            check_if_edges(matrix, x, y, x - 1, y, cl) ++
               check_if_edges(matrix, x, y, x + 1, y, cl) ++
-              check_if_edges(matrix, x, y, x, y + 1, cl) ++ check_if_edges(matrix, x, y, x, y - 1, cl)
+              check_if_edges(matrix, x, y, x, y + 1, cl) ++
+              check_if_edges(matrix, x, y, x, y - 1, cl)
         end
       end
     end
   end
 
   def process_input(str) do
-    matrix =
-      str
-      |> String.split("\n")
-      |> Enum.map(&String.graphemes/1)
-      |> Enum.map(&map_row/1)
-
-    edges = matrix |> define_edges_from_input() |> List.flatten()
-
-    l = length(matrix) * length(Enum.at(matrix, 0, 0)) - 2
-
-    Graph.new()
-    |> Graph.add_vertex("S")
-    |> Graph.add_vertex("E")
-    |> Graph.add_vertices(Enum.to_list(1..l))
-    |> Graph.add_edges(edges)
+    str
+    |> String.split("\n")
+    |> Enum.map(&String.graphemes/1)
+    |> Enum.map(&map_row/1)
   end
 
   def example() do
@@ -102,9 +104,38 @@ defmodule Day12 do
     File.read!("./lib/day12/input.aoc") |> process_input()
   end
 
-  def part_one() do
-    val = input()
-    |> Graph.dijkstra("S", "E") |> Enum.count()
-    val - 1
+  def ptwo(graph, matrix) do
+    rl = length(matrix) - 1
+    cl = length(Enum.at(matrix, 0, 0)) - 1
+
+    for irow <- 0..rl do
+      for icol <- 0..cl do
+        val = matrix |> Enum.at(irow) |> Enum.at(icol)
+
+        cond do
+          val == hd('S') -> "S"
+          val == hd('a') -> icol * cl + irow
+          true -> []
+        end
+      end
+    end
+    |> List.flatten()
+    |> Enum.map(fn v ->
+      x = Graph.dijkstra(graph, v, "E")
+
+      if x == nil do
+        1000
+      else
+        Enum.count(x)
+      end
+    end)
+    |> Enum.min()
+  end
+
+  def part_two() do
+    matrix = input()
+
+    generate_graph(matrix)
+    |> ptwo(matrix)
   end
 end
