@@ -68,9 +68,10 @@ defmodule Day12 do
               check_if_edges(matrix, rl, x, rl, x - 1, cl)
 
           {x, y} ->
-            check_if_edges(matrix, x, y, x- 1, y, cl) ++
+            check_if_edges(matrix, x, y, x - 1, y, cl) ++
               check_if_edges(matrix, x, y, x + 1, y, cl) ++
-              check_if_edges(matrix, x, y, x, y + 1, cl) ++ check_if_edges(matrix, x, y, x, y - 1, cl)
+              check_if_edges(matrix, x, y, x, y + 1, cl) ++
+              check_if_edges(matrix, x, y, x, y - 1, cl)
         end
       end
     end
@@ -103,8 +104,7 @@ defmodule Day12 do
   end
 
   def part_one() do
-    val = input()
-    |> Graph.dijkstra("S", "E") |> Enum.count()
+    val = input() |> Graph.dijkstra("S", "E") |> Enum.count()
     val - 1
   end
 end
